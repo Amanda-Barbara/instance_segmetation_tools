@@ -4,7 +4,7 @@ import json
 import time
 import cv2
 import argparse
-import detectron2
+# import detectron2
 import numpy as np
 
 from tqdm import tqdm
@@ -12,7 +12,7 @@ from glob import glob
 from PIL import Image
 from os.path import join
 
-from detectron2.utils.visualizer import Visualizer
+# from detectron2.utils.visualizer import Visualizer
 
 
 class DataTransformer:
@@ -28,6 +28,7 @@ class DataTransformer:
         }
         self.cls_dict = cls_dict
         self.mask = cv2.imread(mask_path, cv2.IMREAD_GRAYSCALE)
+        self.mask = np.where(self.mask >= 1, np.ones_like(self.mask), 0 * self.mask)
 
 
     def _getShapes(self):
@@ -92,16 +93,17 @@ def main(args):
     os.makedirs(output_root, exist_ok=True)
     category_ids = {
         "__background__": 0,
-        "jt": 1,
-        "qp": 2
+        "defecet": 1,
+        # "qp": 2
     }
     mask_paths = glob(join(mask_root, "*.png"))
     for mask_path in tqdm(mask_paths):
         json_name = mask_path.split("/")[-1].replace(".png", ".json")
         output_path = join(join(output_root, json_name))
-        img_path = mask_path.replace("tujiao_train_mask", "tujiao_train_pic")
-        img_path = img_path.replace(".png", ".jpg")
-        img_path = img_path.replace("_json_label", "")
+        # img_path = mask_path.replace("tujiao_train_mask", "tujiao_train_pic")
+        img_path = mask_path.replace(".png", ".jpg")
+        img_path = img_path.replace("masks", "images")
+        # img_path = img_path.replace("_json_label", "")
         data_transformer = DataTransformer(mask_path, img_path, category_ids)
         data = data_transformer.mask2Json(output_path)
         """check
@@ -119,9 +121,9 @@ def main(args):
 
 def get_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--mask_root", default="/zhuangjf/gitae/Lightweight-Segmentation/tujiao_copy_paste/masks", type=str,
+    parser.add_argument("--mask_root", default="/home/e00130/workspace/igbt/training/zjw/igbt_defect_seg/igbt4_pred/2022_06_28_11_27_53/masks", type=str,
                         help="input image directory")
-    parser.add_argument("--output_root", default="/zhuangjf/gitae/Lightweight-Segmentation/tujiao_copy_paste/labelme_json", type=str,
+    parser.add_argument("--output_root", default="/home/e00130/workspace/igbt/training/zjw/igbt_defect_seg/igbt4_pred/2022_06_28_11_27_53/labelme_json", type=str,
                         help="output dataset directory")
     return parser.parse_args()
 
